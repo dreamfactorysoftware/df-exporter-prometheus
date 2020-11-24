@@ -1,0 +1,56 @@
+{
+  "name": "dreamfactory/df-exporter-prometheus",
+  "description": "DreamFactory(tm) Metrics Exporter for Prometheus",
+  "homepage": "https://www.dreamfactory.com/",
+  "keywords": [
+    "dreamfactory",
+    "prometheus",
+    "exporter"
+  ],
+  "license": [
+    "Apache-2.0"
+  ],
+  "authors": [
+    {
+      "name":  "DreamFactory Team",
+      "email": "code@dreamfactory.com"
+    }
+  ],
+  "support": {
+    "email": "dspsupport@dreamfactory.com",
+    "source": "https://github.com/dreamfactorysoftware/df-skeleton",
+    "issues": "https://github.com/dreamfactorysoftware/df-skeleton/issues",
+    "wiki": "https://wiki.dreamfactory.com"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "dreamfactory/df-core": "~0.22",
+    "spatie/laravel-http-logger": "^1.1",
+    "promphp/prometheus_client_php": "2.2.*",
+    "ext-json": "*",
+    "ext-redis": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~7.0",
+    "filp/whoops": "~2.0"
+  },
+  "autoload": {
+    "classmap": [
+      "src/Utility"
+    ],
+    "psr-4": {
+      "DreamFactory\\Core\\DreamFactoryPrometheusExporter\\": "src/"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-develop": "0.1.x-dev"
+    },
+    "laravel": {
+      "providers": [
+        "DreamFactory\\Core\\DreamFactoryPrometheusExporter\\ServiceProvider"
+      ]
+    }
+  }
+}
