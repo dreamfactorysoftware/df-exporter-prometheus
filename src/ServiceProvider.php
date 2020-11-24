@@ -5,7 +5,8 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 use Prometheus\CollectorRegistry;
 use Prometheus\RenderTextFormat;
-use Prometheus\Storage\Redis;
+//use Prometheus\Storage\Redis;
+use Illuminate\Support\Facades\Redis as LaravelRedis;
 use Spatie\HttpLogger\Middlewares\HttpLogger;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
@@ -15,20 +16,10 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
     public function boot()
     {
+
         if (env('PROMETHEUS_ENABLED') != 'true' && env('CACHE_DRIVER') != 'redis') {
             return;
         }
-
-        Redis::setDefaultOptions(
-            [
-                'host' => env('CACHE_HOST', '127.0.0.1'),
-                'port' => env('CACHE_PORT', 6379),
-                'password' => env('CACHE_PASSWORD', null),
-                'timeout' => 0.1, // in seconds
-                'read_timeout' => '10', // in seconds
-                'persistent_connections' => false
-            ]
-        );
 
         $configPath = __DIR__ . '/../config/http-logger.php';
         if (function_exists('config_path')) {
