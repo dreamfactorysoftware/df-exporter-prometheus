@@ -1,13 +1,12 @@
 <?php
 
 
-namespace DreamFactory\Core\DreamFactoryPrometheusExporter;
+namespace DreamFactory\Core\DreamFactoryPrometheusExporter\Utility\Prometheus;
 
 
 use Illuminate\Support\Facades\Log;
 use Prometheus\MetricFamilySamples;
 use Prometheus\Storage\Adapter;
-use Illuminate\Support\Facades\Cache;
 
 class DreamFactoryCacheAdapter implements Adapter
 {
@@ -57,6 +56,7 @@ class DreamFactoryCacheAdapter implements Adapter
      */
     public function updateCounter(array $data): void
     {
+//        Cache::
         Log::error(json_encode($data));
     }
 

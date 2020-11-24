@@ -16,10 +16,10 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
     public function boot()
     {
-
-        if (env('PROMETHEUS_ENABLED') != 'true' && env('CACHE_DRIVER') != 'redis') {
-            return;
+        if (env('PROMETHEUS_ENABLED') != 'true') {
+            //return;
         }
+
 
         $configPath = __DIR__ . '/../config/http-logger.php';
         if (function_exists('config_path')) {
@@ -38,7 +38,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     public function register()
     {
         if (env('PROMETHEUS_ENABLED') != 'true') {
-            return;
+            //return;
         }
 
         $this->mergeConfigFrom(__DIR__ . '/../config/http-logger.php', 'http-logger');
