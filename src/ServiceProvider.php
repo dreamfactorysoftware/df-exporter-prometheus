@@ -1,6 +1,7 @@
 <?php
 namespace DreamFactory\Core\DreamFactoryPrometheusExporter;
 
+use DreamFactory\Core\DreamFactoryPrometheusExporter\Utility\HttpLogger\DreamFactoryAdapter;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 use Prometheus\CollectorRegistry;
@@ -65,7 +66,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     protected function addMetricRoute() {
         Route::get(env('PROMETHEUS_TELEMETRY', '/metrics'), function () {
             $renderer = new RenderTextFormat();
-            return $renderer->render(CollectorRegistry::getDefault()->getMetricFamilySamples());
+            return $renderer->render((new CollectorRegistry(new DreamFactoryAdapter()))->getMetricFamilySamples());
         });
     }
 }

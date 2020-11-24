@@ -2,27 +2,25 @@
 
 namespace DreamFactory\Core\DreamFactoryPrometheusExporter\Utility\HttpLogger;
 
-use DreamFactory\Core\DreamFactoryPrometheusExporter\DreamFactoryCacheAdapter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Prometheus\CollectorRegistry;
 use Prometheus\Exception\MetricsRegistrationException;
 use Spatie\HttpLogger\LogWriter;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpKernel\Log\Logger;
 
 class APIRequestExporter implements LogWriter
 {
     public function logRequest(Request $request)
     {
-        Log::error('asdasdasd');
         /**
          * @var CollectorRegistry $registry
          */
-        $registry = new CollectorRegistry(new DreamFactoryCacheAdapter());
+        $registry = new CollectorRegistry(new DreamFactoryAdapter());
         $method = strtoupper($request->getMethod());
 
-        $uri = preg_replace("/$", '', $request->getPathInfo(), 1);
+        $uri = preg_replace("/\/$/", '', $request->getPathInfo(), 1);
 
         $files = array_map(function (UploadedFile $file) {
             return $file->getRealPath();
