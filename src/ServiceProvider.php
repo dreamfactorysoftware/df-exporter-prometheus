@@ -15,7 +15,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
     public function boot()
     {
-        dd('Hello world');
         if (env('PROMETHEUS_ENABLED') != 'true' && env('CACHE_DRIVER') != 'redis') {
             return;
         }

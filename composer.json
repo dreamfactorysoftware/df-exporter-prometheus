@@ -28,8 +28,7 @@
     "dreamfactory/df-core": "~0.22",
     "spatie/laravel-http-logger": "^1.1",
     "promphp/prometheus_client_php": "2.2.*",
-    "ext-json": "*",
-    "ext-redis": "*"
+    "ext-json": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "~7.0",
