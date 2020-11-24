@@ -1,11 +1,13 @@
 <?php
 namespace DreamFactory\Core\DreamFactoryPrometheusExporter;
 
+use DreamFactory\Core\DreamFactoryPrometheusExporter\Utility\HttpLogger\DreamFactoryAdapter;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 use Prometheus\CollectorRegistry;
 use Prometheus\RenderTextFormat;
-use Prometheus\Storage\Redis;
+//use Prometheus\Storage\Redis;
+use Illuminate\Support\Facades\Redis as LaravelRedis;
 use Spatie\HttpLogger\Middlewares\HttpLogger;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
@@ -15,20 +17,10 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
     public function boot()
     {
-        if (env('PROMETHEUS_ENABLED') != 'true' && env('CACHE_DRIVER') != 'redis') {
-            return;
+        if (env('PROMETHEUS_ENABLED') != 'true') {
+            //return;
         }
 
-        Redis::setDefaultOptions(
-            [
-                'host' => env('CACHE_HOST', '127.0.0.1'),
-                'port' => env('CACHE_PORT', 6379),
-                'password' => env('CACHE_PASSWORD', null),
-                'timeout' => 0.1, // in seconds
-                'read_timeout' => '10', // in seconds
-                'persistent_connections' => false
-            ]
-        );
 
         $configPath = __DIR__ . '/../config/http-logger.php';
         if (function_exists('config_path')) {
@@ -47,7 +39,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     public function register()
     {
         if (env('PROMETHEUS_ENABLED') != 'true') {
-            return;
+            //return;
         }
 
         $this->mergeConfigFrom(__DIR__ . '/../config/http-logger.php', 'http-logger');
@@ -74,7 +66,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     protected function addMetricRoute() {
         Route::get(env('PROMETHEUS_TELEMETRY', '/metrics'), function () {
             $renderer = new RenderTextFormat();
-            return $renderer->render(CollectorRegistry::getDefault()->getMetricFamilySamples());
+            return $renderer->render((new CollectorRegistry(new DreamFactoryAdapter()))->getMetricFamilySamples());
         });
     }
 }

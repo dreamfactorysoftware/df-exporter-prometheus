@@ -3,6 +3,7 @@
 namespace DreamFactory\Core\DreamFactoryPrometheusExporter\Utility\HttpLogger;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Prometheus\CollectorRegistry;
 use Prometheus\Exception\MetricsRegistrationException;
@@ -16,10 +17,10 @@ class APIRequestExporter implements LogWriter
         /**
          * @var CollectorRegistry $registry
          */
-        $registry = CollectorRegistry::getDefault();
+        $registry = new CollectorRegistry(new DreamFactoryAdapter());
         $method = strtoupper($request->getMethod());
 
-        $uri = preg_replace("/$", '', $request->getPathInfo(), 1);
+        $uri = preg_replace("/\/$/", '', $request->getPathInfo(), 1);
 
         $files = array_map(function (UploadedFile $file) {
             return $file->getRealPath();
