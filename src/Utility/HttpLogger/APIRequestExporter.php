@@ -17,7 +17,8 @@ class APIRequestExporter implements LogWriter
         /**
          * @var CollectorRegistry $registry
          */
-        $registry = new CollectorRegistry(new DreamFactoryAdapter());
+        $predisAdapter = new PredisAdapter(Cache::getStore()->getRedis()->connection('cache')->client());
+        $registry = new CollectorRegistry($predisAdapter);
         $method = strtoupper($request->getMethod());
 
         $uri = preg_replace("/\/$/", '', $request->getPathInfo(), 1);
