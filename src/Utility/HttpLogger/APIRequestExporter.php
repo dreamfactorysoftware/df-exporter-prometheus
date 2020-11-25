@@ -21,6 +21,11 @@ class APIRequestExporter implements LogWriter
         $registry = new CollectorRegistry($predisAdapter);
         $method = strtoupper($request->getMethod());
 
+        $uri = $request->getPathInfo();
+        if (! $this->isNeedToLog($uri)) {
+            return;
+        }
+
         $uri = preg_replace("/\/$/", '', $request->getPathInfo(), 1);
 
         $files = array_map(function (UploadedFile $file) {
@@ -32,7 +37,12 @@ class APIRequestExporter implements LogWriter
         $message = "{$method} {$uri} - Files: ".implode(', ', $files);
 
         try {
-            $counter = $registry->getOrRegisterCounter('dreamfactory', 'api_requests_total', '', ['method', 'uri', 'api_key_short']);
+            $counter = $registry->getOrRegisterCounter(
+                'dreamfactory',
+                'api_requests_total',
+                'The total amount of API requests processed',
+                ['method', 'uri', 'api_key_short']
+            );
 
             $counter->inc([$method, $uri, $apiKey]);
 
@@ -42,4 +52,17 @@ class APIRequestExporter implements LogWriter
 
         Log::info($message);
     }
+
+    private function isNeedToLog($uri) {
+        if (env('PROMETHEUS_INCLUDE_SYSTEM_REQUESTS')) {
+            return true;
+        } else if (preg_match("/^\/api\/v2\/system\//", $uri)
+            || preg_match("/^\/api\/v2$/", $uri)
+            || preg_match("/^\/api\/v2\/user\/.*/", $uri)
+            || preg_match("/^\/api\/v2\/api_docs\/*/", $uri)) {
+            return false;
+        }
+        return true;
+    }
 }
+

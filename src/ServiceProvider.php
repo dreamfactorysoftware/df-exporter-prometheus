@@ -72,11 +72,14 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     }
 
     protected function isSupported() {
-        if (env('PROMETHEUS_ENABLED') != 'true') {
+        if (env('LOGSDB_ENABLED')) {
+            Log::warning("DreamFactory Exporter (Prometheus) does not support working with the df-mongo-logs package. Only one package will work at a time.");
+        }
+        if (!env('PROMETHEUS_ENABLED')) {
             return false;
         }
         if (env('CACHE_DRIVER') != 'redis') {
-            Log::warning("DreamFactory Exporter Prometheus support only [redis] cache driver, when [" . env('CACHE_DRIVER') . "] provided");
+            Log::error("DreamFactory Exporter (Prometheus) support only [redis] cache driver, when [" . env('CACHE_DRIVER') . "] provided");
             return false;
         }
         return true;
