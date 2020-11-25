@@ -6,27 +6,14 @@ namespace DreamFactory\Core\DreamFactoryPrometheusExporter\Utility\HttpLogger;
 use InvalidArgumentException;
 use Predis\Client;
 use Prometheus\Counter;
-use Prometheus\Exception\StorageException;
 use Prometheus\Gauge;
 use Prometheus\Histogram;
 use Prometheus\MetricFamilySamples;
 use Prometheus\Storage\Adapter;
 
-class DreamFactoryAdapter implements Adapter
+class PredisAdapter implements Adapter
 {
     const PROMETHEUS_METRIC_KEYS_SUFFIX = '_METRIC_KEYS';
-
-    /**
-     * @var array
-     */
-    private static $defaultOptions = [
-        'host' => '127.0.0.1',
-        'port' => 6379,
-        'timeout' => 0.1,
-        'read_timeout' => '10',
-        'persistent_connections' => false,
-        'password' => null,
-    ];
 
     /**
      * @var string
@@ -34,49 +21,18 @@ class DreamFactoryAdapter implements Adapter
     private static $prefix = 'PROMETHEUS_';
 
     /**
-     * @var array
-     */
-    private $options = [];
-
-    /**
      * @var Client
      */
     private $redis;
 
     /**
-     * @var boolean
-     */
-    private $connectionInitialized = false;
-
-    /**
      * Redis constructor.
-     * @param array $options
+     * @param Client $redis
      */
-    public function __construct(array $options = [])
+    public function __construct(Client $redis)
     {
-        $this->options = array_merge(self::$defaultOptions, $options);
-        $this->redis = \Illuminate\Support\Facades\Cache::getStore()->getRedis()->connection('cache')->client();
-    }
-
-    public static function fromExistingConnection(\Redis $redis): self
-    {
-        if ($redis->isConnected() === false) {
-            throw new StorageException('Connection to Redis server not established');
-        }
-
-        $self = new self();
-        $self->connectionInitialized = true;
-        $self->redis = $redis;
-
-        return $self;
-    }
-
-    /**
-     * @param array $options
-     */
-    public static function setDefaultOptions(array $options): void
-    {
-        self::$defaultOptions = array_merge(self::$defaultOptions, $options);
+        $this->redis = $redis;
+        self::setPrefix(gethostname() ?? self::$prefix);
     }
 
     /**
@@ -88,26 +44,20 @@ class DreamFactoryAdapter implements Adapter
     }
 
     /**
-     * @throws StorageException
      */
     public function flushRedis(): void
     {
-        $this->openConnection();
         $this->redis->flushAll();
     }
 
     /**
      * @return MetricFamilySamples[]
-     * @throws StorageException
      */
     public function collect(): array
     {
-
-        \Log::error('collect');
-        $this->openConnection();
         $metrics = [];
-//        $metrics = array_merge($metrics, $this->collectHistograms());
-//        $metrics = array_merge($metrics, $this->collectGauges());
+        $metrics = array_merge($metrics, $this->collectHistograms());
+        $metrics = array_merge($metrics, $this->collectGauges());
         $metrics = array_merge($metrics, $this->collectCounters());
         return array_map(
             function (array $metric) {
@@ -118,58 +68,10 @@ class DreamFactoryAdapter implements Adapter
     }
 
     /**
-     * @throws StorageException
-     */
-    private function openConnection(): void
-    {
-        if ($this->connectionInitialized === true) {
-            return;
-        }
-
-//        $connectionStatus = $this->connectToServer();
-//        if ($connectionStatus === false) {
-//            throw new StorageException("Can't connect to Redis server", 0);
-//        }
-//
-//        if ($this->options['password']) {
-//            $this->redis->auth($this->options['password']);
-//        }
-//
-//        if (isset($this->options['database'])) {
-//            $this->redis->select($this->options['database']);
-//        }
-//
-//        $this->redis->setOption(\Redis::OPT_READ_TIMEOUT, $this->options['read_timeout']);
-    }
-
-    /**
-     * @return bool
-     */
-    private function connectToServer(): bool
-    {
-        try {
-            if ($this->options['persistent_connections']) {
-                return $this->redis->pconnect(
-                    $this->options['host'],
-                    $this->options['port'],
-                    $this->options['timeout']
-                );
-            }
-
-            return $this->redis->connect($this->options['host'], $this->options['port'], $this->options['timeout']);
-        } catch (\RedisException $e) {
-            return false;
-        }
-    }
-
-    /**
      * @param array $data
-     * @throws StorageException
      */
     public function updateHistogram(array $data): void
     {
-        \Log::error('updateHistogram');
-        $this->openConnection();
         $bucketToIncrease = '+Inf';
         foreach ($data['buckets'] as $bucket) {
             if ($data['value'] <= $bucket) {
@@ -203,12 +105,9 @@ LUA
 
     /**
      * @param array $data
-     * @throws StorageException
      */
     public function updateGauge(array $data): void
     {
-        \Log::error('updateGauge');
-        $this->openConnection();
         $metaData = $data;
         unset($metaData['value']);
         unset($metaData['labelValues']);
@@ -242,12 +141,9 @@ LUA
 
     /**
      * @param array $data
-     * @throws StorageException
      */
     public function updateCounter(array $data): void
     {
-        \Log::error('updateCounter');
-        $this->openConnection();
         $metaData = $data;
         unset($metaData['value']);
         unset($metaData['labelValues']);
@@ -277,12 +173,11 @@ LUA
      */
     private function collectHistograms(): array
     {
-        \Log::error('collectHistograms');
         $keys = $this->redis->sMembers(self::$prefix . Histogram::TYPE . self::PROMETHEUS_METRIC_KEYS_SUFFIX);
         sort($keys);
         $histograms = [];
         foreach ($keys as $key) {
-            $raw = $this->redis->hGetAll(str_replace($this->redis->_prefix(''), '', $key));
+            $raw = $this->redis->hGetAll($key);
             $histogram = json_decode($raw['__meta'], true);
             unset($raw['__meta']);
             $histogram['samples'] = [];
@@ -355,12 +250,11 @@ LUA
      */
     private function collectGauges(): array
     {
-        \Log::error('collectGauges');
         $keys = $this->redis->sMembers(self::$prefix . Gauge::TYPE . self::PROMETHEUS_METRIC_KEYS_SUFFIX);
         sort($keys);
         $gauges = [];
         foreach ($keys as $key) {
-            $raw = $this->redis->hGetAll(str_replace($this->redis->_prefix(''), '', $key));
+            $raw = $this->redis->hGetAll($key);
             $gauge = json_decode($raw['__meta'], true);
             unset($raw['__meta']);
             $gauge['samples'] = [];
@@ -385,16 +279,12 @@ LUA
      */
     private function collectCounters(): array
     {
-
-        \Log::error('collectCounters');
         $keys = $this->redis->sMembers(self::$prefix . Counter::TYPE . self::PROMETHEUS_METRIC_KEYS_SUFFIX);
         sort($keys);
         $counters = [];
         foreach ($keys as $key) {
 
-            $key1 = str_replace($this->redis->_prefix(''), '', $key);
-            \Log::error($key1);
-            $raw = $this->redis->hGetAll($key1);
+            $raw = $this->redis->hGetAll($key);
             $counter = json_decode($raw['__meta'], true);
             unset($raw['__meta']);
             $counter['samples'] = [];
