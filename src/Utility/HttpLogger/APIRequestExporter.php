@@ -46,6 +46,15 @@ class APIRequestExporter implements LogWriter
 
             $counter->inc([$method, $uri, $apiKey]);
 
+            $counter100 = $registry->getOrRegisterCounter(
+                'dreamfactory',
+                'api_requests_total_x100',
+                'The total amount of API requests processed (x100)',
+                ['method', 'uri', 'api_key_short']
+            );
+
+            $counter100->incBy(100, [$method, $uri, $apiKey]);
+
         } catch (MetricsRegistrationException $e) {
             Log::error($e->getMessage());
         }
