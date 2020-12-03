@@ -16,7 +16,8 @@ Configurations for this package:
 | CACHE_DRIVER                       | It should always be `redis`                                    | any             | `redis`       |
 | PROMETHEUS_ENABLED                 | Determines whether it is allowed to collect and expose metrics | `true`, `false` | `false`       |
 | PROMETHEUS_TELEMETRY               | Metrics endpoint for Prometheus                                | string          | `/metrics`    |
-| PROMETHEUS_INCLUDE_SYSTEM_REQUESTS | Do Prometheus have to log system calls?                                 | `true`, `false` | `false`       |
+| PROMETHEUS_INCLUDE_SYSTEM_REQUESTS | Do Prometheus have to log system calls?                        | `true`, `false` | `false`       |
+| PROMETHEUS_ALLOWED_HOSTNAME        | Allowed hostname to call /metrics endpoint                     | `/regex/`       | `/^.*$/`      |
 
 ## Metrics
 

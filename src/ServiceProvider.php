@@ -5,6 +5,7 @@ use DreamFactory\Core\DreamFactoryPrometheusExporter\Utility\HttpLogger\PredisAd
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 use Prometheus\CollectorRegistry;
 use Prometheus\RenderTextFormat;
@@ -32,7 +33,11 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
         $this->addMiddleware();
-        $this->addMetricRoute();
+
+        $prometheusAllowedHostnamePattern = env('PROMETHEUS_ALLOWED_HOSTNAME', "/^.*$/");
+        if (preg_match($prometheusAllowedHostnamePattern, Request::server('HTTP_HOST'))) {
+            $this->addMetricRoute();
+        }
     }
 
     public function register()
