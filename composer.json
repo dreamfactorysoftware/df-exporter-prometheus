@@ -26,7 +26,7 @@
   "prefer-stable": true,
   "require": {
     "dreamfactory/df-core": "~0.22",
-    "dreamfactory/df-system": "0.4.*",
+    "dreamfactory/df-system": "~0.5",
     "spatie/laravel-http-logger": "^1.1",
     "promphp/prometheus_client_php": "2.2.*",
     "predis/predis": "1.1.*",
