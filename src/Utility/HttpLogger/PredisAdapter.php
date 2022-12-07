@@ -60,9 +60,7 @@ class PredisAdapter implements Adapter
         $metrics = array_merge($metrics, $this->collectGauges());
         $metrics = array_merge($metrics, $this->collectCounters());
         return array_map(
-            function (array $metric) {
-                return new MetricFamilySamples($metric);
-            },
+            fn(array $metric) => new MetricFamilySamples($metric),
             $metrics
         );
     }
@@ -266,9 +264,10 @@ LUA
                     'value' => $value,
                 ];
             }
-            usort($gauge['samples'], function ($a, $b) {
-                return strcmp(implode("", $a['labelValues']), implode("", $b['labelValues']));
-            });
+            usort(
+                $gauge['samples'], 
+                fn($a, $b) => strcmp(implode("", $a['labelValues']), implode("", $b['labelValues']))
+            );
             $gauges[] = $gauge;
         }
         return $gauges;
@@ -296,9 +295,10 @@ LUA
                     'value' => $value,
                 ];
             }
-            usort($counter['samples'], function ($a, $b) {
-                return strcmp(implode("", $a['labelValues']), implode("", $b['labelValues']));
-            });
+            usort(
+                $counter['samples'],
+                fn($a, $b) => strcmp(implode("", $a['labelValues']), implode("", $b['labelValues']))
+            );
             $counters[] = $counter;
         }
         return $counters;
@@ -310,16 +310,12 @@ LUA
      */
     private function getRedisCommand(int $cmd): string
     {
-        switch ($cmd) {
-            case Adapter::COMMAND_INCREMENT_INTEGER:
-                return 'hIncrBy';
-            case Adapter::COMMAND_INCREMENT_FLOAT:
-                return 'hIncrByFloat';
-            case Adapter::COMMAND_SET:
-                return 'hSet';
-            default:
-                throw new InvalidArgumentException("Unknown command");
-        }
+        return match ($cmd) {
+            Adapter::COMMAND_INCREMENT_INTEGER => 'hIncrBy',
+            Adapter::COMMAND_INCREMENT_FLOAT => 'hIncrByFloat',
+            Adapter::COMMAND_SET => 'hSet',
+            default => throw new InvalidArgumentException("Unknown command"),
+        };
     }
 
     /**

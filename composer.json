@@ -25,12 +25,13 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "dreamfactory/df-core": "~0.22",
-    "dreamfactory/df-system": "~0.5",
+    "dreamfactory/df-core": "~1.0",
+    "dreamfactory/df-system": "~0.6",
     "spatie/laravel-http-logger": "^1.1",
     "promphp/prometheus_client_php": "2.2.*",
     "predis/predis": "1.1.*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "php": "^8.0"
   },
   "require-dev": {
     "phpunit/phpunit": "~7.0",
