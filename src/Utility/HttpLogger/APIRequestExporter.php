@@ -28,9 +28,10 @@ class APIRequestExporter implements LogWriter
 
         $uri = preg_replace("/\/$/", '', $request->getPathInfo(), 1);
 
-        $files = array_map(function (UploadedFile $file) {
-            return $file->getRealPath();
-        }, iterator_to_array($request->files));
+        $files = array_map(
+            fn(UploadedFile $file) => $file->getRealPath(), 
+            iterator_to_array($request->files)
+        );
 
         $apiKey = substr($request->header('X-DreamFactory-API-Key'), 0, 8);
 

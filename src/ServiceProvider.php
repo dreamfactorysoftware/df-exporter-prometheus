@@ -55,15 +55,8 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      * @return void
      */
     protected function addMiddleware()
-    {
-        // the method name was changed in Laravel 5.4
-        if (method_exists(Router::class, 'aliasMiddleware')) {
-            Route::aliasMiddleware(ServiceProvider::MIDDLEWARE_NAME, HttpLogger::class);
-        } else {
-            /** @noinspection PhpUndefinedMethodInspection */
-            Route::middleware(ServiceProvider::MIDDLEWARE_NAME, HttpLogger::class);
-        }
-
+    {        
+        Route::aliasMiddleware(ServiceProvider::MIDDLEWARE_NAME, HttpLogger::class);
         Route::pushMiddlewareToGroup('df.api', ServiceProvider::MIDDLEWARE_NAME);
     }
 
