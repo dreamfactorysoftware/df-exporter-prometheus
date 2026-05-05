@@ -55,9 +55,11 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      * @return void
      */
     protected function addMiddleware()
-    {        
+    {
         Route::aliasMiddleware(ServiceProvider::MIDDLEWARE_NAME, HttpLogger::class);
-        Route::pushMiddlewareToGroup('df.api', ServiceProvider::MIDDLEWARE_NAME);
+        if (Route::hasMiddlewareGroup('df.api')) {
+            Route::pushMiddlewareToGroup('df.api', ServiceProvider::MIDDLEWARE_NAME);
+        }
     }
 
     protected function addMetricRoute() {
