@@ -66,6 +66,18 @@ class PredisAdapter implements Adapter
     }
 
     /**
+     * Summary metrics are not used by this exporter, but the Adapter interface
+     * (promphp/prometheus_client_php >= 2.3) requires this method. Implement as
+     * a no-op so the adapter satisfies the contract.
+     *
+     * @param array $data
+     */
+    public function updateSummary(array $data): void
+    {
+        // No-op: summary metrics are not collected by df-exporter-prometheus.
+    }
+
+    /**
      * @param array $data
      */
     public function updateHistogram(array $data): void
